@@ -25,11 +25,10 @@ rate = st.slider("Speech Rate (%)", min_value=50, max_value=150, value=100)
 text = st.text_area("Enter the text you want to convert to speech:", height=150)
 
 if st.button("Generate Audio"):
-    if not text:
+    if not text.strip():
         st.warning("Please enter some text.")
     else:
-
-        # Build SSML input:
+        # Build SSML input if style is not 'general'
         if style == "general":
             ssml_text = text
         else:
@@ -45,13 +44,15 @@ if st.button("Generate Audio"):
 
         async def generate():
             temp_path = tempfile.mktemp(suffix=".mp3")
-            communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=f"{rate-100}%")
+            rate_val = rate - 100
+            rate_str = f"{rate_val}%" if rate_val != 0 else ""
+            communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=rate_str)
             await communicate.save(temp_path)
             return temp_path
 
         try:
             audio_path = asyncio.run(generate())
-            st.success(f"Voice: {voice}, Style: {style}")
+            st.success(f"Voice: {voice}, Style: {style}, Rate: {rate}%")
             st.audio(audio_path, format="audio/mp3")
         except Exception as e:
             st.error(f"Error generating audio: {e}")
