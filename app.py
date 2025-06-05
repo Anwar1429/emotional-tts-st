@@ -28,7 +28,6 @@ if st.button("Generate Audio"):
     if not text.strip():
         st.warning("Please enter some text.")
     else:
-        # Build SSML input if style is not 'general'
         if style == "general":
             ssml_text = text
         else:
@@ -45,8 +44,10 @@ if st.button("Generate Audio"):
         async def generate():
             temp_path = tempfile.mktemp(suffix=".mp3")
             rate_val = rate - 100
-            rate_str = f"{rate_val}%" if rate_val != 0 else ""
-            communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=rate_str)
+            if rate_val == 0:
+                communicate = edge_tts.Communicate(ssml_text, voice=voice)
+            else:
+                communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=f"{rate_val}%")
             await communicate.save(temp_path)
             return temp_path
 
