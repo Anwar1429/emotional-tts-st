@@ -30,6 +30,7 @@ if st.button("Generate Audio"):
     else:
         if style == "general":
             ssml_text = text
+            use_ssml = False
         else:
             ssml_text = f"""
 <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
@@ -40,14 +41,22 @@ if st.button("Generate Audio"):
   </voice>
 </speak>
 """
+            use_ssml = True
 
         async def generate():
             temp_path = tempfile.mktemp(suffix=".mp3")
             rate_val = rate - 100
             if rate_val == 0:
-                communicate = edge_tts.Communicate(ssml_text, voice=voice)
+                if use_ssml:
+                    communicate = edge_tts.Communicate(ssml_text, voice=voice, ssml=True)
+                else:
+                    communicate = edge_tts.Communicate(ssml_text, voice=voice)
             else:
-                communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=f"{rate_val}%")
+                if use_ssml:
+                    communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=f"{rate_val}%", ssml=True)
+                else:
+                    communicate = edge_tts.Communicate(ssml_text, voice=voice, rate=f"{rate_val}%")
+
             await communicate.save(temp_path)
             return temp_path
 
